@@ -3,8 +3,16 @@ const cors = require("cors");
 const fetch = require("node-fetch");
 
 const app = express();
-app.use(cors());
+
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type"]
+}));
+
 app.use(express.json());
+
+app.options("/analyze", cors());
 
 app.post("/analyze", async (req, res) => {
   const { home, away, league, sport } = req.body;
@@ -21,13 +29,13 @@ app.post("/analyze", async (req, res) => {
         max_tokens: 250,
         messages: [{
           role: "user",
-          content: `Eres un analista deportivo experto. Analiza este partido en 2-3 frases en español considerando estadísticas recientes, forma del equipo y contexto de la competición.
+          content: `Eres un analista deportivo experto. Analiza este partido en 2-3 frases en español.
 
 Partido: ${home} vs ${away}
 Competición: ${league}
 Deporte: ${sport}
 
-Responde SOLO con este JSON sin nada más:
+Responde SOLO con este JSON:
 {"analysis": "análisis aquí", "pick": "1", "confidence": 75}`
         }]
       })
@@ -39,14 +47,4 @@ Responde SOLO con este JSON sin nada más:
     res.json(parsed);
   } catch (err) {
     res.json({
-      analysis: `${home} se enfrenta a ${away} en ${league}. Partido interesante con opciones para ambos equipos.`,
-      pick: "1",
-      confidence: 65
-    });
-  }
-});
-
-app.get("/health", (req, res) => res.json({ status: "ok" }));
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Servidor BetMind corriendo en puerto ${PORT}`));
+      analysis: `${home} se enfrenta a ${away} en ${league}. Partido con op
